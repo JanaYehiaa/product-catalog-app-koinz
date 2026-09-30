@@ -50,6 +50,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.data.data.model.Product
 import com.example.productcatalog.R
+import com.example.productcatalog.core.components.LoadErrorPage
+import com.example.productcatalog.core.components.LoadingPage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -68,7 +70,7 @@ fun ProductDetailScreen(
 
     when (val state = uiState) {
         ProductDetailUIState.Loading -> {
-            CircularProgressIndicator()
+            LoadingPage()
         }
 
         is ProductDetailUIState.Success -> {
@@ -80,11 +82,11 @@ fun ProductDetailScreen(
         }
 
         is ProductDetailUIState.Error -> {
-            state.message
+            LoadErrorPage(state.message)
         }
 
         is ProductDetailUIState.Empty -> {
-            state.message
+            LoadErrorPage(state.message)
         }
     }
 }

@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.data.model.Product
 import com.example.productcatalog.R
+import com.example.productcatalog.core.components.LoadErrorPage
+import com.example.productcatalog.core.components.LoadingPage
 import com.example.productcatalog.features.allproducts.presentation.ProductUIState
 import com.example.productcatalog.features.allproducts.presentation.ProductViewModel
 import com.example.productcatalog.features.productdetails.presentation.ProductDetailActivity
@@ -50,27 +52,44 @@ fun ProductListScreen(
 
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val pullToRefreshState = rememberPullToRefreshState()
+    val isRefreshing =
+        (uiState as? ProductUIState.Success)?.isRefreshing == true
 
-    when (val state = uiState) {
-        ProductUIState.Loading -> {
-            CircularProgressIndicator()
-        }
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {viewModel.getProductList(isRefresh = true)},
+        modifier = modifier.fillMaxSize(),
+        state = pullToRefreshState,
+        indicator = {
+            Indicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                isRefreshing = isRefreshing,
+                containerColor = Color(0xFF9CA3AF),
+                color = Color(0xFF1A1A1A),
+                state = pullToRefreshState
+            )
+        },
+    ) {
+        when (val state = uiState) {
+            ProductUIState.Loading -> {
+                LoadingPage()
 
-        is ProductUIState.Error -> {
-            Text(text = state.message)
-        }
+            }
 
-        is ProductUIState.Empty -> {
-            Text(text = state.message)
+            is ProductUIState.Error -> {
+                LoadErrorPage(state.message)
+            }
 
-        }
+            is ProductUIState.Empty -> {
+                LoadErrorPage(state.message)
+            }
 
-        is ProductUIState.Success -> {
-            ProductListContent(
-                products = state.products,
-                isRefreshing = state.isRefreshing,
-                modifier = modifier,
-                onRefresh = { viewModel.getProductList(isRefresh = true) })
+            is ProductUIState.Success -> {
+                ProductListContent(
+                    products = state.products,
+                    modifier = modifier)
+            }
         }
     }
 }
@@ -79,83 +98,65 @@ fun ProductListScreen(
 @Composable
 fun ProductListContent(
     products: List<Product>,
-    isRefreshing: Boolean,
     modifier: Modifier = Modifier,
-    onRefresh: () -> Unit
 ) {
     val context = LocalContext.current
-    val state = rememberPullToRefreshState()
 
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
-        modifier = modifier,
-        state = state,
-        indicator = {
-            Indicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                isRefreshing = isRefreshing,
-                containerColor = Color(0xFF9CA3AF),
-                color = Color(0xFF1A1A1A),
-                state = state
-            )
-        },
+
+    LazyColumn(
+        modifier = modifier
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        LazyColumn(
-            modifier = modifier
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                Column(modifier = modifier.padding(top = 48.dp, bottom = 12.dp)) {
-                    Text(
-                        text = "New Arrivals", style = TextStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 30.sp,
-                            lineHeight = 36.sp,
-                            letterSpacing = (-0.75).sp,
-                            color = Color(0xFF1A1A1A)
+        item {
+            Column(modifier = modifier.padding(top = 48.dp, bottom = 12.dp)) {
+                Text(
+                    text = "New Arrivals", style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp,
+                        lineHeight = 36.sp,
+                        letterSpacing = (-0.75).sp,
+                        color = Color(0xFF1A1A1A)
 
-                        )
                     )
-                    Text(
-                        text = "Discover our latest collection",
-                        style = TextStyle(
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 16.sp,
-                            lineHeight = 24.sp,
-                            letterSpacing = 0.sp,
-                            color = Color(0xFF6B7280)
-                        ),
-                    )
-                }
-            }
-
-            item {
-                SearchBar(modifier)
-
-            }
-
-            items(products) { product ->
-                ProductItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 9.dp, bottom = 15.dp, end = 9.dp),
-                    product = product,
-                    onClick = {
-                        val intent = Intent(
-                            context,
-                            ProductDetailActivity::class.java
-                        ).apply {
-                            putExtra("PRODUCT_ID", product.id)
-                        }
-
-                        context.startActivity(intent)
-                    }
+                )
+                Text(
+                    text = "Discover our latest collection",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        letterSpacing = 0.sp,
+                        color = Color(0xFF6B7280)
+                    ),
                 )
             }
+        }
+
+        item {
+            SearchBar(modifier)
 
         }
+
+        items(products) { product ->
+            ProductItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 9.dp, bottom = 15.dp, end = 9.dp),
+                product = product,
+                onClick = {
+                    val intent = Intent(
+                        context,
+                        ProductDetailActivity::class.java
+                    ).apply {
+                        putExtra("PRODUCT_ID", product.id)
+                    }
+
+                    context.startActivity(intent)
+                }
+            )
+        }
+
     }
 }
 
