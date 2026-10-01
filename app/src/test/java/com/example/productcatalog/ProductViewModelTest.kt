@@ -5,17 +5,15 @@ import com.example.data.data.repository.ProductRepository
 import com.example.productcatalog.core.common.getErrorMessage
 import com.example.productcatalog.features.allproducts.presentation.ProductUIState
 import com.example.productcatalog.features.allproducts.presentation.ProductViewModel
-import com.example.productcatalog.features.productdetails.presentation.ProductDetailUIState
 import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Test
-
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Rule
+import org.junit.Test
 import java.io.IOException
 
 /**
@@ -68,7 +66,7 @@ class ProductViewModelTest {
 
     }
     @Test
-    fun productDetailViewModel_GetProductDetail_LoadingThenSuccess() = runTest {
+    fun productViewModel_GGetAllProducts_LoadingThenSuccess() = runTest {
         coEvery { mockRepository.getAllProducts() } coAnswers {
             delay(1_000)
             products
@@ -81,7 +79,7 @@ class ProductViewModelTest {
     }
 
     @Test
-    fun productDetailViewModel_GetProductDetail_RefreshThenShowData() = runTest {
+    fun productDetailViewModel_GetAllProducts_RefreshThenShowData() = runTest {
         coEvery { mockRepository.getAllProducts() } returns products
         val viewModel = createViewModel()
         val newProducts = listOf(mockk<Product>(relaxed = true), mockk<Product>(relaxed = true))
@@ -97,5 +95,16 @@ class ProductViewModelTest {
 
         assertEquals(ProductUIState.Success(newProducts, isRefreshing = false), viewModel.uiState.value)
 
+    }
+
+    @Test
+    fun productViewModel_GetAllProducts_SuccessAfterError() = runTest {
+        coEvery { mockRepository.getAllProducts() } throws IOException("No Internet")
+        val viewModel = createViewModel()
+
+        coEvery { mockRepository.getAllProducts() } returns products
+        viewModel.getProductList()
+
+        TestCase.assertEquals(ProductUIState.Success(products), viewModel.uiState.value)
     }
 }

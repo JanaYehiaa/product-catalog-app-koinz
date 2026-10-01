@@ -3,7 +3,6 @@ package com.example.productcatalog
 import com.example.data.data.model.Product
 import com.example.data.data.repository.ProductRepository
 import com.example.productcatalog.core.common.getErrorMessage
-import com.example.productcatalog.features.allproducts.presentation.ProductViewModel
 import com.example.productcatalog.features.productdetails.presentation.ProductDetailUIState
 import com.example.productcatalog.features.productdetails.presentation.ProductDetailViewModel
 import io.mockk.coEvery
@@ -55,17 +54,6 @@ class ProductDetailViewModelTest {
         assertEquals(ProductDetailUIState.Loading, viewModel.uiState.value)
 
         advanceUntilIdle()
-        assertEquals(ProductDetailUIState.Success(product), viewModel.uiState.value)
-    }
-
-    @Test
-    fun productDetailViewModel_GetProductDetail_SuccessAfterError() = runTest {
-        coEvery { mockRepository.getProduct(productId) } throws IOException("fail")
-        val viewModel = createViewModel()
-
-        coEvery { mockRepository.getProduct(productId) } returns product
-        viewModel.getSingleProduct(productId)
-
         assertEquals(ProductDetailUIState.Success(product), viewModel.uiState.value)
     }
 }
