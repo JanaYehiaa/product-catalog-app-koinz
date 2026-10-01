@@ -85,9 +85,9 @@ fun ProductDetailScreen(
             LoadErrorPage(state.message)
         }
 
-        is ProductDetailUIState.Empty -> {
-            LoadErrorPage(state.message)
-        }
+//        is ProductDetailUIState.Empty -> {
+//            LoadErrorPage(state.message)
+//        }
     }
 }
 

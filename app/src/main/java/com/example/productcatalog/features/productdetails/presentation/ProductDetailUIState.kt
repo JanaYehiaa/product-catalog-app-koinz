@@ -5,7 +5,7 @@ import com.example.productcatalog.features.allproducts.presentation.ProductUISta
 
 interface ProductDetailUIState {
     data object Loading: ProductDetailUIState
-    data class Empty(val message:String): ProductDetailUIState
+    //data class Empty(val message:String): ProductDetailUIState
     data class Error(val message:String): ProductDetailUIState
     data class Success(val product: Product): ProductDetailUIState
 
